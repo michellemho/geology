@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Felt Geology Layer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+ <!-- Include CARTO VL JS -->
+<script src="https://cartodb.github.io/carto-vl/dist/carto-vl.js"></script>
+ <!-- Include Mapbox GL JS and CSS-->
+ <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+ <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
+<link href="https://carto.com/developers/carto-vl/examples/maps/style.css" rel="stylesheet">
+
+</head>
+<body>
+
+
+<div id="map"></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoibWljaGVsbGVtaG8iLCJhIjoiY2l2MWM0cWthMDA3NDJ5b3g3cGF5d2huaiJ9.2otqgGYhjK7bBnAhrnyu5A';
+
+// Define user
+carto.setDefaultAuth({
+user: 'michellemho-carto',
+apiKey: 'l5HujDkHOnUZrXKPqkNxng'
+});
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/michellemho/ckz3gka4f003915mxl0ni4n20',
+    center: [-121.81371355033353, 48.77574505901454],
+    zoom: 10,
+    'pitch': 60, // pitch in degrees
+    'bearing': -60, // bearing in degrees
+});
+
+map.on('load', () => {
+    map.addSource('mapbox-dem', {
+    'type': 'raster-dem',
+    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+    'tileSize': 512,
+    'maxzoom': 14,
+    'pitch': 60, // pitch in degrees
+    'bearing': -60, // bearing in degrees
+    });
+    
+    // add the DEM source as a terrain layer
+    map.setTerrain({ 'source': 'mapbox-dem' });
+
+    
+    // Just checking bounds of visible map
+    const bounds = map.getBounds();
+    console.log(bounds.toArray());
+
+    // Add geologic layer
+    map.addSource('geologic_units', {
+        'type': 'geojson',
+        'data': 'geocolor.geojson'
+    });
+    map.addLayer({
+    'id': 'geologic_units',
+    'type': 'fill',
+    'source': 'geologic_units',
+    'paint': {
+        'fill-color': ['get', 'color'],
+        'fill-opacity': .5
+    }
+    });
+
+    // add contour lines
+    map.addLayer({
+        id: 'terrain-data',
+        type: 'line',
+        source: {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-terrain-v2'
+        },
+        'source-layer': 'contour',
+        layout: {
+            visibility: 'visible'
+        },
+        'paint': {
+            'line-color': '#000000'
+    }
+    });
+});
+</script>
+
+</body>
+</html>
