@@ -33,6 +33,7 @@ var map = new mapboxgl.Map({
     'pitch': 60, // pitch in degrees
     'bearing': -60, // bearing in degrees
 });
+let hoveredStateId = null;
 
 map.on('load', () => {
     map.addSource('mapbox-dem', {
@@ -53,17 +54,22 @@ map.on('load', () => {
     console.log(bounds.toArray());
 
     // Add geologic layer
-    map.addSource('geologic_units', {
+    map.addSource('geologics', {
         'type': 'geojson',
         'data': 'geocolor.geojson'
     });
     map.addLayer({
     'id': 'geologic_units',
     'type': 'fill',
-    'source': 'geologic_units',
+    'source': 'geologics',
     'paint': {
         'fill-color': ['get', 'color'],
-        'fill-opacity': .5
+        'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            1,
+            0.5
+            ]
     }
     });
 
@@ -83,7 +89,63 @@ map.on('load', () => {
             'line-color': '#000000'
     }
     });
+
+    map.on('mousemove', 'geologic_units', (e) => {
+        if (e.features.length > 0) {
+            if (hoveredStateId !== null) {
+                map.setFeatureState(
+                    { source: 'geologics', cartodb_id: hoveredStateId },
+                    { hover: false }
+                    );
+            }
+            console.log(e.features[0])
+            hoveredStateId = e.features[0].cartodb_id;
+        map.setFeatureState(
+            { source: 'geologics', cartodb_id: hoveredStateId },
+            { hover: true }
+        );
+        }
+    });
+        
+    // When the mouse leaves the state-fill layer, update the feature state of the
+    // previously hovered feature.
+    map.on('mouseleave', 'geologic_units', () => {
+        if (hoveredStateId !== null) {
+            map.setFeatureState(
+            { source: 'geologics', id: hoveredStateId },
+            { hover: false }
+            );
+        }
+        hoveredStateId = null;
+    });
+
+    // add a hover popup
+    const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+    map.on('mouseenter', 'geologic_units', (e) => {
+        if (e.features.length > 0) {
+            popup.remove();};
+    // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+        
+        const description = e.features[0].properties.label;
+        
+        // Populate the popup
+        // Display a popup with the description of the geologic unit
+        popup.setLngLat(e.lngLat)
+            .setText(description)
+            .addTo(map);
+    });
+
+    map.on('mouseleave', 'geologic_units', function() {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
+    }); 
+
 });
+ 
 </script>
 
 </body>
