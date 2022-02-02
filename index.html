@@ -95,7 +95,7 @@ map.on('load', () => {
         closeButton: false,
         closeOnClick: false
     });
-    map.on('mouseenter', 'geologic_units', (e) => {
+    map.on('mousemove', 'geologic_units', (e) => {
         if (e.features.length > 0) {
             popup.remove();};
     // Change the cursor style as a UI indicator.
