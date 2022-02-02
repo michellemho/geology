@@ -90,35 +90,6 @@ map.on('load', () => {
     }
     });
 
-    map.on('mousemove', 'geologic_units', (e) => {
-        if (e.features.length > 0) {
-            if (hoveredStateId !== null) {
-                map.setFeatureState(
-                    { source: 'geologics', cartodb_id: hoveredStateId },
-                    { hover: false }
-                    );
-            }
-            console.log(e.features[0])
-            hoveredStateId = e.features[0].cartodb_id;
-        map.setFeatureState(
-            { source: 'geologics', cartodb_id: hoveredStateId },
-            { hover: true }
-        );
-        }
-    });
-        
-    // When the mouse leaves the state-fill layer, update the feature state of the
-    // previously hovered feature.
-    map.on('mouseleave', 'geologic_units', () => {
-        if (hoveredStateId !== null) {
-            map.setFeatureState(
-            { source: 'geologics', id: hoveredStateId },
-            { hover: false }
-            );
-        }
-        hoveredStateId = null;
-    });
-
     // add a hover popup
     const popup = new mapboxgl.Popup({
         closeButton: false,
